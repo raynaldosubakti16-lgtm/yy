@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1e242b">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icon.svg">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>DCP Scientific Calculator — ASTM D 6951</title>
+<style>
+  :root {
+    /* Casio ClassWiz / Scientific Calculator Dark Slate & LCD Mint Theme */
+    --bg-chassis: #181c22;
+    --bg-body: #222730;
+    --bg-panel: #2a303b;
+    --bg-key: #343b48;
+    --bg-key-hover: #3e4756;
+    --border-chassis: #3d4554;
+    --border-subtle: rgba(255, 255, 255, 0.09);
+
+    /* Iconic Scientific Calculator High-Contrast LCD Screen */
+    --lcd-bg: #c7d6c3;
+    --lcd-bg-deep: #b8c9b4;
+    --lcd-border: #556254;
+    --lcd-ink: #131c15;
+    --lcd-ink-soft: #37473a;
+    --lcd-grid: rgba(19, 28, 21, 0.14);
+
+    /* Tactile Calculator Accent Keys */
+    --key-orange: #e06d24;
+    --key-orange-dark: #b85314;
+    --key-teal: #1d9a8c;
+    --key-blue: #3b82f6;
+    --key-red: #dc2626;
+    --text-main: #f1f5f9;
+    --text-muted: #9aa5b4;
+    --text-dim: #737f90;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Code", "Roboto Mono", Menlo, Consolas, monospace;
+  }
+
+  body.theme-light {
+    /* Classic Light Scientific Calculator (Silver / Cream Chassis + Crisp Sage LCD) */
+    --bg-chassis: #d6dbe2;
+    --bg-body: #e5e9ef;
+    --bg-panel: #f4f6f9;
+    --bg-key: #ffffff;
+    --bg-key-hover: #edf1f7;
+    --border-chassis: #b3bcc9;
+    --border-subtle: rgba(15, 23, 42, 0.12);
+
+    --lcd-bg: #d9e6d5;
+    --lcd-bg-deep: #cad9c5;
+    --lcd-border: #788876;
+    --lcd-ink: #111a13;
+    --lcd-ink-soft: #3a4a3d;
+    --lcd-grid: rgba(17, 26, 19, 0.13);
+
+    --key-orange: #d95d18;
+    --key-orange-dark: #b2470d;
+    --key-teal: #0f766e;
+    --key-blue: #2563eb;
+    --key-red: #dc2626;
+    --text-main: #18202c;
+    --text-muted: #4b5563;
+    --text-dim: #6b7280;
+  }
+
+  * {
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Inter, sans-serif;
+    background-color: var(--bg-chassis);
+    background-image: radial-gradient(rgba(255,255,255,0.03) 1px, transparent 0);
+    background-size: 16px 16px;
+    color: var(--text-main);
+    min-height: 100vh;
+    transition: background-color 0.2s ease, color 0.2s ease;
+  }
+
+  .calc-shell {
+    max-width: 1120px;
+    margin: 0 auto;
+    padding: 12px 12px 84px;
+  }
+
+  /* Scientific Calculator Top Bezel */
+  .calc-header {
+    background: var(--bg-body);
+    border: 2px solid var(--border-chassis);
+    border-radius: 16px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    box-shadow: 0 6px 0 rgba(0, 0, 0, 0.25), 0 12px 24px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .brand-plate {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+    min-width: 240px;
+  }
+
+  .model-chip {
+    background: var(--key-teal);
+    color: #ffffff;
+    font-family: var(--font-mono);
+    font-weight: 800;
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 9px;
+    letter-spacing: 0.5px;
+    box-shadow: inset 0 -2px 0 rgba(0,0,0,0.28);
+    flex-shrink: 0;
+    text-align: center;
+    line-height: 1.15;
+  }
+
+  .model-chip small {
+    display: block;
+    font-size: 9px;
+    opacity: 0.9;
+    font-weight: 700;
+  }
+
+  .title-wrap {
+    flex: 1;
+  }
+
+  .title-input {
+    width: 100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-chassis);
+    color: var(--text-main);
+    font-size: 14.5px;
+    font-weight: 800;
+    border-radius: 8px;
+    padding: 5px 9px;
+    outline: none;
+  }
+
+  .title-input:focus {
+    border-color: var(--key-teal);
+  }
+
+  .spec-subtitle {
+    margin: 4px 0 0 2px;
+    font-family: var(--font-mono);
+    font-size: 10.5px;
+    color: var(--text-muted);
+    letter-spacing: 0.2px;
+  }
+
+  /* Tactile Calculator Buttons */
+  .keypad-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .calc-btn {
+    background: var(--bg-key);
+    color: var(--text-main);
+    border: 1px solid var(--border-chassis);
+    border-bottom-width: 3px;
+    border-radius: 9px;
+    padding: 7px 11px;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: transform 0.06s, background-color 0.15s;
+  }
+
+  .calc-btn:hover { background: var(--bg-key-hover); }
+  .calc-btn:active {
+    transform: translateY(2px);
+    border-bottom-width: 1px;
+  }
+
+  .btn-del {
+    background: var(--key-orange);
+    border-color: var(--key-orange-dark);
+    color: #ffffff;
+  }
+  .btn-del:hover { background: #ea772e; }
+
+  .btn-exe {
+    background: var(--key-teal);
+    border-color: #136f65;
+    color: #ffffff;
+  }
+  .btn-exe:hover { background: #23b0a0; }
+
+  .btn-blue {
+    background: var(--key-blue);
+    border-color: #1d4ed8;
+    color: #ffffff;
+  }
+  .btn-blue:hover { background: #4f8ff7; }
+
+  .btn-danger {
+    background: var(--key-red);
+    border-color: #991b1b;
+    color: #ffffff;
+  }
+
+  /* Multi-Line High-Contrast Scientific LCD Display */
+  .lcd-bezel {
+    background: #111519;
+    padding: 8px;
+    border-radius: 15px;
+    border: 2px solid var(--border-chassis);
+    margin-bottom: 12px;
+    box-shadow: inset 0 3px 8px rgba(0,0,0,0.65);
+  }
+
+  .lcd-screen {
+    background: linear-gradient(180deg, var(--lcd-bg) 0%, var(--lcd-bg-deep) 100%);
+    border: 2px solid var(--lcd-border);
+    border-radius: 9px;
+    padding: 11px 14px;
+    color: var(--lcd-ink);
+    font-family: var(--font-mono);
+    box-shadow: inset 0 2px 6px rgba(0,0,0,0.16);
+  }
+
+  .lcd-status-strip {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    font-size: 10px;
+    font-weight: 800;
+    border-bottom: 1px solid var(--lcd-grid);
+    padding-bottom: 6px;
+    margin-bottom: 9px;
+    letter-spacing: 0.4px;
+  }
+
+  .lcd-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+  }
+
+  .lcd-tag {
+    background: var(--lcd-ink);
+    color: var(--lcd-bg);
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 9.5px;
+  }
+
+  .lcd-tag.outline {
+    background: transparent;
+    color: var(--lcd-ink);
+    border: 1px solid var(--lcd-ink);
+  }
+
+  .lcd-metrics {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  @media (max-width: 780px) {
+    .lcd-metrics { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .lcd-cell {
+    border-right: 1px dashed var(--lcd-grid);
+    padding-right: 8px;
+  }
+
+  .lcd-cell:last-child {
+    border-right: none;
+    padding-right: 0;
+  }
+
+  @media (max-width: 780px) {
+    .lcd-cell:nth-child(2) { border-right: none; }
+  }
+
+  .lcd-lbl {
+    font-size: 10px;
+    font-weight: 700;
+    color: var(--lcd-ink-soft);
+    text-transform: uppercase;
+  }
+
+  .lcd-num {
+    font-size: 24px;
+    font-weight: 900;
+    letter-spacing: -0.6px;
+    margin: 2px 0;
+    line-height: 1.1;
+  }
+
+  .lcd-sub {
+    font-size: 10.5px;
+    font-weight: 700;
+    color: var(--lcd-ink-soft);
+  }
+
+  .lcd-verdict {
+    display: inline-block;
+    margin-top: 3px;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 13px;
+    font-weight: 900;
+    border: 1.5px solid var(--lcd-ink);
+  }
+  .lcd-verdict.pass {
+    background: var(--lcd-ink);
+    color: var(--lcd-bg);
+  }
+  .lcd-verdict.fail {
+    background: transparent;
+    color: #991b1b;
+    border-color: #991b1b;
+  }
+
+  /* Parameter & Setup Panel */
+  .param-card {
+    background: var(--bg-body);
+    border: 1px solid var(--border-chassis);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+
+  .param-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .param-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .p-field {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .p-field label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  select, input[type="text"], input[type="number"], input[type="date"] {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-chassis);
+    color: var(--text-main);
+    border-radius: 8px;
+    padding: 7px 9px;
+    font-size: 12.5px;
+    outline: none;
+    width: 100%;
+  }
+
+  select:focus, input:focus {
+    border-color: var(--key-teal);
+    box-shadow: 0 0 0 2px rgba(29, 154, 140, 0.22);
+  }
+
+  /* Main Split Workspace */
+  .workspace {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 12px;
+    align-items: start;
+  }
+
+  @media (max-width: 920px) {
+    .workspace { grid-template-columns: 1fr; }
+  }
+
+  .module-box {
+    background: var(--bg-body);
+    border: 1px solid var(--border-chassis);
+    border-radius: 14px;
+    padding: 13px;
+  }
+
+  .module-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .module-title {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--key-teal);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  /* DCP Data Table */
+  .table-scroll {
+    overflow-x: auto;
+  }
+
+  table.dcp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .dcp-table th {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 7px 5px;
+    border-bottom: 1.5px solid var(--border-chassis);
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .dcp-table th:first-child { text-align: center; }
+
+  .dcp-table td {
+    padding: 4px 5px;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: right;
+    font-family: var(--font-mono);
+  }
+
+  .dcp-table td:first-child {
+    text-align: center;
+    color: var(--text-muted);
+    font-weight: 700;
+  }
+
+  .dcp-table tr.active-row {
+    background: rgba(29, 154, 140, 0.08);
+  }
+
+  .dcp-table tr.base-row {
+    background: rgba(148, 163, 184, 0.08);
+  }
+
+  .num-input {
+    width: 68px !important;
+    text-align: right;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: 14px !important;
+    padding: 6px 7px !important;
+    background: var(--bg-panel) !important;
+    border: 1.5px solid var(--border-chassis) !important;
+  }
+
+  .num-input.pen-inp {
+    width: 78px !important;
+    border-color: var(--key-teal) !important;
+  }
+
+  .cbr-cell {
+    font-weight: 800;
+    color: var(--text-main);
+  }
+
+  .cbr-cell.hi { color: var(--key-teal); }
+  .cbr-cell.lo { color: var(--key-orange); }
+
+  /* LCD Graph Screen */
+  .graph-lcd {
+    background: linear-gradient(180deg, var(--lcd-bg) 0%, var(--lcd-bg-deep) 100%);
+    border: 2px solid var(--lcd-border);
+    border-radius: 10px;
+    padding: 8px;
+    margin-bottom: 8px;
+  }
+
+  .graph-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-wrap: wrap;
+  }
+
+  .graph-controls select {
+    width: auto;
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+
+  /* Copy Preview Box */
+  .report-box {
+    width: 100%;
+    background: var(--bg-panel);
+    border: 1px solid var(--border-chassis);
+    color: var(--text-main);
+    border-radius: 9px;
+    padding: 9px 10px;
+    font-family: var(--font-mono);
+    font-size: 11.5px;
+    line-height: 1.45;
+    resize: none;
+  }
+
+  /* Saved Points List */
+  .saved-list {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    max-height: 250px;
+    overflow-y: auto;
+  }
+
+  .saved-card {
+    background: var(--bg-panel);
+    border: 1px solid var(--border-chassis);
+    border-radius: 9px;
+    padding: 8px 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .saved-info {
+    flex: 1;
+    cursor: pointer;
+  }
+
+  .saved-info strong {
+    display: block;
+    font-size: 12.5px;
+    font-family: var(--font-mono);
+  }
+
+  .saved-info span {
+    font-size: 11px;
+    color: var(--text-muted);
+  }
+
+  .saved-btns {
+    display: flex;
+    gap: 5px;
+    flex-shrink: 0;
+  }
+
+  .toast {
+    position: fixed;
+    bottom: 18px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: #111519;
+    color: #d9e6d5;
+    border: 1.5px solid var(--key-teal);
+    font-family: var(--font-mono);
+    padding: 9px 16px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.45);
+    transition: transform 0.22s ease;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+
+  @media print {
+    .keypad-bar, .calc-btn, .toast, .report-box, .graph-controls { display: none !important; }
+    body { background: #fff; color: #000; }
+    .calc-header, .lcd-bezel, .param-card, .module-box {
+      background: #fff !important;
+      color: #000 !important;
+      border: 1px solid #cbd5e1 !important;
+      box-shadow: none !important;
+    }
+    .lcd-screen, .graph-lcd { background: #f8fafc !important; color: #000 !important; border-color: #94a3b8 !important; }
+    .num-input, .title-input { border: none !important; background: transparent !important; color: #000 !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="calc-shell">
+  <!-- Scientific Calculator Top Header -->
+  <header class="calc-header">
+    <div class="brand-plate">
+      <div class="model-chip" style="display:flex; align-items:center; gap:8px; padding:5px 10px;">
+        <img src="icon-192.png" alt="DCP" style="width:36px; height:36px; border-radius:7px; display:block;">
+        <div style="text-align:left;">DCP-6951<small>ASTM D 6951</small></div>
+      </div>
+      <div class="title-wrap">
+        <input type="text" id="customTitle" class="title-input" value="FIELD COMPACTION (DCP) — IGP POMALAA" placeholder="Ketik Judul Lembar Kerja..." oninput="saveMeta()">
+        <div class="spec-subtitle">ASTM D 6951 &bull; CBR = 292 / (DCP Index)<sup>1.12</sup></div>
+      </div>
+    </div>
+
+    <div class="keypad-bar">
+      <button class="calc-btn" id="themeBtn" onclick="toggleTheme()">&#9728; Light</button>
+      <button class="calc-btn btn-exe" onclick="saveCurrentPoint()">STO + Simpan</button>
+      <button class="calc-btn btn-blue" onclick="copyReport()">COPY Data</button>
+      <button class="calc-btn" onclick="exportCSV()">CSV</button>
+      <button class="calc-btn" onclick="window.print()">PRINT</button>
+    </div>
+  </header>
+
+  <!-- Multi-Line Scientific LCD Screen -->
+  <section class="lcd-bezel">
+    <div class="lcd-screen">
+      <div class="lcd-status-strip">
+        <div class="lcd-tags">
+          <span class="lcd-tag">ASTM D6951</span>
+          <span class="lcd-tag outline" id="lcdHammerTag">HAMMER: 8 KG (F=1)</span>
+          <span class="lcd-tag outline" id="lcdEqTag">EQ: ALL SOIL (292/DCP^1.12)</span>
+        </div>
+        <span id="lcdReadCount">READINGS: 0 / 16</span>
+      </div>
+
+      <div class="lcd-metrics">
+        <div class="lcd-cell">
+          <div class="lcd-lbl">CBR Correlated (Avg)</div>
+          <div class="lcd-num" id="lcdAvgCbr">0.00%</div>
+          <div class="lcd-sub" id="lcdMinMaxSub">Min: - | Max: -</div>
+        </div>
+        <div class="lcd-cell">
+          <div class="lcd-lbl">Avg DCP Index</div>
+          <div class="lcd-num" id="lcdAvgDcp">0.0</div>
+          <div class="lcd-sub">mm / blow</div>
+        </div>
+        <div class="lcd-cell">
+          <div class="lcd-lbl">Total Blows / Depth</div>
+          <div class="lcd-num" id="lcdTotalDepth">0 / 0</div>
+          <div class="lcd-sub">blows / mm pen.</div>
+        </div>
+        <div class="lcd-cell">
+          <div class="lcd-lbl">QC Spec Check</div>
+          <div id="lcdVerdictWrap"><span class="lcd-verdict pass">PASS SPEC</span></div>
+          <div class="lcd-sub" id="lcdSpecDiff" style="margin-top:4px;">Min Spec: 4.0%</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Test Parameters & Calibration Setup -->
+  <section class="param-card">
+    <div class="param-grid">
+      <div class="p-field">
+        <label>Tanggal Uji</label>
+        <input type="date" id="metaDate" oninput="recalculate(); saveMeta();">
+      </div>
+      <div class="p-field">
+        <label>STA / Lokasi</label>
+        <input type="text" id="metaSta" placeholder="Contoh: PB5N Fill Seq 1" oninput="recalculate(); saveMeta();">
+      </div>
+      <div class="p-field">
+        <label>Point of Test</label>
+        <input type="text" id="metaPoint" value="Point 1" placeholder="Contoh: Point 1" oninput="recalculate(); saveMeta();">
+      </div>
+      <div class="p-field">
+        <label>Layer &amp; Min CBR (%)</label>
+        <select id="metaLayer" onchange="applyLayerSpec()">
+          <option value="Subgrade (Min 4%)" data-spec="4" selected>Subgrade (Min 4%)</option>
+          <option value="Sub Base (Min 15%)" data-spec="15">Sub Base (Min 15%)</option>
+          <option value="Base Coarse (Min 50%)" data-spec="50">Base Coarse (Min 50%)</option>
+          <option value="Wearing Coarse (Min 80%)" data-spec="80">Wearing Coarse (Min 80%)</option>
+        </select>
+      </div>
+      <div class="p-field">
+        <label>Hammer Weight</label>
+        <select id="hammerFactor" onchange="recalculate(); saveMeta();">
+          <option value="1" selected>8 Kg (Factor = 1)</option>
+          <option value="2">4.6 / 4 Kg (Factor = 2)</option>
+        </select>
+      </div>
+      <div class="p-field">
+        <label>Min Spec CBR (%)</label>
+        <input type="number" id="minSpec" step="0.5" value="4" oninput="recalculate(); saveMeta();">
+      </div>
+    </div>
+  </section>
+
+  <!-- Main Workspace -->
+  <div class="workspace">
+    <!-- Left: DCP Reading Matrix -->
+    <div class="module-box">
+      <div class="module-head">
+        <div class="module-title">&#9638; Matriks Bacaan DCP (No. 1 – 17)</div>
+        <div style="display:flex; gap:6px; flex-wrap:wrap;">
+          <button class="calc-btn" style="padding:5px 9px; font-size:11px;" onclick="fillDefaultBlows()">Set Blow = 1</button>
+          <button class="calc-btn btn-del" style="padding:5px 9px; font-size:11px;" onclick="clearInputs()">AC / Reset</button>
+        </div>
+      </div>
+
+      <div class="table-scroll">
+        <table class="dcp-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Blows (A)</th>
+              <th>Cum. Pen (B) mm</th>
+              <th>&Delta;Pen (C) mm</th>
+              <th>DCP Idx (F)</th>
+              <th>CBR (%)</th>
+            </tr>
+          </thead>
+          <tbody id="dcpTableBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Right: LCD Profile Graph, Copy Preview & Memory Registers -->
+    <div style="display:flex; flex-direction:column; gap:12px;">
+      <div class="module-box">
+        <div class="module-head">
+          <div class="module-title">&#128200; Kurva Penetrasi &amp; Profil CBR</div>
+          <div class="graph-controls" style="margin:0;">
+            <select id="chartModeSelect" onchange="recalculate()">
+              <option value="cbr_depth" selected>Profil CBR (%) vs Kedalaman</option>
+              <option value="pen_blow">Kumulatif Penetrasi vs Blow (Excel)</option>
+            </select>
+          </div>
+        </div>
+        <div class="graph-lcd">
+          <svg id="dcpChart" viewBox="0 0 460 270" style="width:100%; height:auto; display:block;"></svg>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-family:var(--font-mono); font-size:10.5px; color:var(--text-muted);">
+          <span id="chartLegendLeft">&#9632; Profil Lapisan Uji</span>
+          <span id="chartLegendRight">-- Garis Batas Min Spec</span>
+        </div>
+      </div>
+
+      <!-- WhatsApp / Log Summary Preview -->
+      <div class="module-box">
+        <div class="module-head" style="margin-bottom:6px;">
+          <div class="module-title">&#128203; Output Ringkasan (Siap Tempel WA)</div>
+          <button class="calc-btn btn-blue" style="padding:4px 9px; font-size:11px;" onclick="copyReport()">Salin</button>
+        </div>
+        <textarea id="reportBox" class="report-box" rows="8" readonly onclick="this.select()"></textarea>
+      </div>
+
+      <!-- Saved Memory Registers -->
+      <div class="module-box">
+        <div class="module-head">
+          <div class="module-title">&#128190; Memori Titik (<span id="savedCount">0</span>)</div>
+          <span id="savedAvgLabel" style="font-family:var(--font-mono); font-size:11px; color:var(--key-teal); font-weight:700;">Avg: -</span>
+        </div>
+        <div class="saved-list" id="savedList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast">Tersimpan!</div>
+
+<script>
+const TOTAL_ROWS = 17; // Row 1 = initial reading (0 blows, 0 mm), Rows 2..17 = 16 readings
+
+let blowsArr = Array(TOTAL_ROWS).fill("");
+let penArr   = Array(TOTAL_ROWS).fill("");
+blowsArr[0] = 0;
+penArr[0]   = 0;
+
+let savedPoints = JSON.parse(localStorage.getItem("dcp_calc_points_v1") || "[]");
+let isLight = false;
+
+function toggleTheme() {
+  isLight = !isLight;
+  document.body.classList.toggle("theme-light", isLight);
+  document.getElementById("themeBtn").innerHTML = isLight ? "&#9790; Dark" : "&#9728; Light";
+  localStorage.setItem("dcp_calc_theme_v1", isLight ? "light" : "dark");
+  recalculate();
+}
+
+function loadTheme() {
+  if (localStorage.getItem("dcp_calc_theme_v1") === "light") {
+    isLight = true;
+    document.body.classList.add("theme-light");
+    document.getElementById("themeBtn").innerHTML = "&#9790; Dark";
+  }
+}
+
+function saveMeta() {
+  const meta = {
+    title: document.getElementById("customTitle").value,
+    sta: document.getElementById("metaSta").value,
+    point: document.getElementById("metaPoint").value,
+    layer: document.getElementById("metaLayer").value,
+    hammer: document.getElementById("hammerFactor").value,
+    spec: document.getElementById("minSpec").value
+  };
+  localStorage.setItem("dcp_calc_meta_v1", JSON.stringify(meta));
+}
+
+function loadMeta() {
+  try {
+    const m = JSON.parse(localStorage.getItem("dcp_calc_meta_v1") || "null");
+    if (m) {
+      if (m.title) document.getElementById("customTitle").value = m.title;
+      if (m.sta !== undefined) document.getElementById("metaSta").value = m.sta;
+      if (m.point !== undefined) document.getElementById("metaPoint").value = m.point;
+      if (m.layer) document.getElementById("metaLayer").value = m.layer;
+      if (m.hammer) document.getElementById("hammerFactor").value = m.hammer;
+      if (m.spec) document.getElementById("minSpec").value = m.spec;
+    }
+  } catch (e) {}
+}
+
+function initTable() {
+  loadTheme();
+  loadMeta();
+  const tbody = document.getElementById("dcpTableBody");
+  tbody.innerHTML = "";
+
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    const tr = document.createElement("tr");
+    tr.id = `row_${i}`;
+    if (i === 0) tr.className = "base-row";
+    tr.innerHTML = `
+      <td>${i + 1}</td>
+      <td>
+        <input type="number" inputmode="numeric" step="1" min="0" class="num-input" id="blow_${i}"
+          placeholder="${i === 0 ? '0' : '1'}" value="${blowsArr[i]}"
+          oninput="onBlowInput(${i}, this.value)"
+          onkeydown="handleNav(event, 'blow', ${i})" onfocus="this.select()">
+      </td>
+      <td>
+        <input type="number" inputmode="decimal" step="1" min="0" class="num-input pen-inp" id="pen_${i}"
+          placeholder="0" value="${penArr[i]}"
+          oninput="onPenInput(${i}, this.value)"
+          onkeydown="handleNav(event, 'pen', ${i})" onfocus="this.select()">
+      </td>
+      <td id="dpen_${i}">0</td>
+      <td id="dcp_${i}">0.0</td>
+      <td class="cbr-cell" id="cbr_${i}">0.00</td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  document.getElementById("metaDate").value = new Date().toISOString().split("T")[0];
+  recalculate();
+  renderSavedPoints();
+}
+
+function handleNav(e, col, idx) {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    const nextIdx = idx + 1;
+    if (nextIdx < TOTAL_ROWS) {
+      if (col === "blow") {
+        const nextBlow = document.getElementById(`blow_${nextIdx}`);
+        if (nextBlow) nextBlow.focus();
+      } else {
+        if (blowsArr[nextIdx] === "") {
+          blowsArr[nextIdx] = 1;
+          document.getElementById(`blow_${nextIdx}`).value = 1;
+          recalculate();
+        }
+        const nextPen = document.getElementById(`pen_${nextIdx}`);
+        if (nextPen) nextPen.focus();
+      }
+    }
+  }
+}
+
+function onBlowInput(idx, val) {
+  blowsArr[idx] = val === "" ? "" : (parseFloat(val) || 0);
+  recalculate();
+}
+
+function onPenInput(idx, val) {
+  penArr[idx] = val === "" ? "" : (parseFloat(val) || 0);
+  // Auto-set blow = 1 on row >= 1 if user types penetration directly while blow is still blank
+  if (idx > 0 && val !== "" && blowsArr[idx] === "") {
+    blowsArr[idx] = 1;
+    document.getElementById(`blow_${idx}`).value = 1;
+  }
+  recalculate();
+}
+
+function applyLayerSpec() {
+  const sel = document.getElementById("metaLayer");
+  const spec = sel.options[sel.selectedIndex].getAttribute("data-spec");
+  if (spec) document.getElementById("minSpec").value = spec;
+  saveMeta();
+  recalculate();
+}
+
+function fillDefaultBlows() {
+  for (let i = 1; i < TOTAL_ROWS; i++) {
+    if (blowsArr[i] === "") {
+      blowsArr[i] = 1;
+      document.getElementById(`blow_${i}`).value = 1;
+    }
+  }
+  recalculate();
+  document.getElementById("pen_1").focus();
+  showToast("Blow No. 2–17 diisi = 1");
+}
+
+function clearInputs() {
+  blowsArr = Array(TOTAL_ROWS).fill("");
+  penArr   = Array(TOTAL_ROWS).fill("");
+  blowsArr[0] = 0;
+  penArr[0]   = 0;
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    document.getElementById(`blow_${i}`).value = blowsArr[i];
+    document.getElementById(`pen_${i}`).value  = penArr[i];
+  }
+  recalculate();
+  document.getElementById("pen_1").focus();
+  showToast("Tabel direset");
+}
+
+function formatTanggalIndo(isoStr) {
+  if (!isoStr) return "-";
+  const p = isoStr.split("-");
+  if (p.length !== 3) return isoStr;
+  const bln = ["Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"];
+  return `${p[2]} ${bln[parseInt(p[1], 10) - 1] || p[1]} ${p[0]}`;
+}
+
+function buildSummaryText(obj) {
+  const statusStr = obj.pass ? "PASS" : "BELOW SPEC";
+  return `*${(obj.title || "FIELD COMPACTION (DCP) REPORT").trim()}*
+Tanggal   : ${formatTanggalIndo(obj.date)}
+Lokasi    : ${(obj.sta || "-").trim()}
+Layer     : ${(obj.layer || "-").trim()}
+Point     : ${(obj.point || "-").trim()}
+Hammer    : ${obj.hammer == 2 ? "4 Kg (F=2)" : "8 Kg (F=1)"}
+Total Blow: ${obj.totalBlows} blows (${obj.totalPen} mm)
+Avg DCP   : ${Number(obj.avgDcp).toFixed(1)} mm/blow
+*Avg CBR   : ${Number(obj.avgCbr).toFixed(2)}%* (Min ${obj.minSpec}% - ${statusStr})`;
+}
+
+function recalculate() {
+  const hammerFactor = parseFloat(document.getElementById("hammerFactor").value) || 1;
+  const minSpec = parseFloat(document.getElementById("minSpec").value) || 0;
+
+  document.getElementById("lcdHammerTag").textContent =
+    hammerFactor === 2 ? "HAMMER: 4 KG (F=2)" : "HAMMER: 8 KG (F=1)";
+
+  const computedRows = [];
+  let validCbrs = [];
+  let validDcps = [];
+  let totalBlows = 0;
+  let maxPen = parseFloat(penArr[0]) || 0;
+
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    const tr = document.getElementById(`row_${i}`);
+    const bVal = parseFloat(blowsArr[i]);
+    const pVal = parseFloat(penArr[i]);
+
+    let dPen = 0, perBlow = 0, dcpIdx = 0, cbrVal = 0;
+    let isValidReading = false;
+
+    if (i === 0) {
+      dPen = 0;
+      dcpIdx = 0;
+      cbrVal = 0;
+    } else if (!isNaN(bVal) && bVal > 0 && !isNaN(pVal) && penArr[i] !== "") {
+      const prevPen = !isNaN(parseFloat(penArr[i - 1])) ? parseFloat(penArr[i - 1]) : 0;
+      dPen = pVal - prevPen;
+      if (dPen > 0) {
+        isValidReading = true;
+        perBlow = dPen / bVal;
+        dcpIdx = perBlow * hammerFactor;
+        // ASTM D 6951 formula: CBR = 292 / (DCP ^ 1.12)
+        cbrVal = 292 / Math.pow(dcpIdx, 1.12);
+
+        validCbrs.push(cbrVal);
+        validDcps.push(dcpIdx);
+        totalBlows += bVal;
+        maxPen = pVal;
+      }
+    }
+
+    if (tr && i > 0) {
+      tr.className = isValidReading ? "active-row" : "";
+    }
+
+    document.getElementById(`dpen_${i}`).textContent = isValidReading ? dPen.toFixed(0) : "0";
+    document.getElementById(`dcp_${i}`).textContent  = isValidReading ? dcpIdx.toFixed(1) : "0.0";
+
+    const cbrCell = document.getElementById(`cbr_${i}`);
+    cbrCell.textContent = isValidReading ? cbrVal.toFixed(2) : "0.00";
+    cbrCell.className = "cbr-cell" + (isValidReading ? (cbrVal >= minSpec ? " hi" : " lo") : "");
+
+    computedRows.push({
+      no: i + 1,
+      blows: isNaN(bVal) ? 0 : bVal,
+      cumBlows: totalBlows,
+      cumPen: isNaN(pVal) ? 0 : pVal,
+      dPen,
+      dcpIdx,
+      cbrVal,
+      valid: isValidReading
+    });
+  }
+
+  const avgCbr = validCbrs.length ? validCbrs.reduce((a, b) => a + b, 0) / validCbrs.length : 0;
+  const avgDcp = validDcps.length ? validDcps.reduce((a, b) => a + b, 0) / validDcps.length : 0;
+  const minCbr = validCbrs.length ? Math.min(...validCbrs) : 0;
+  const maxCbr = validCbrs.length ? Math.max(...validCbrs) : 0;
+  const isPass = avgCbr >= minSpec;
+
+  document.getElementById("lcdReadCount").textContent = `READINGS: ${validCbrs.length} / 16`;
+  document.getElementById("lcdAvgCbr").textContent = avgCbr.toFixed(2) + "%";
+  document.getElementById("lcdMinMaxSub").textContent = validCbrs.length
+    ? `Min: ${minCbr.toFixed(1)}% | Max: ${maxCbr.toFixed(1)}%`
+    : "Min: - | Max: -";
+
+  document.getElementById("lcdAvgDcp").textContent = avgDcp.toFixed(1);
+  document.getElementById("lcdTotalDepth").textContent = `${totalBlows} / ${maxPen.toFixed(0)}`;
+
+  const vWrap = document.getElementById("lcdVerdictWrap");
+  vWrap.innerHTML = isPass
+    ? `<span class="lcd-verdict pass">&#10003; PASS SPEC</span>`
+    : `<span class="lcd-verdict fail">&#10007; BELOW SPEC</span>`;
+
+  const diff = avgCbr - minSpec;
+  document.getElementById("lcdSpecDiff").textContent = `Min: ${minSpec}% (${diff >= 0 ? "+" : ""}${diff.toFixed(2)}%)`;
+
+  document.getElementById("reportBox").value = buildSummaryText({
+    title: document.getElementById("customTitle").value,
+    date: document.getElementById("metaDate").value,
+    sta: document.getElementById("metaSta").value,
+    layer: document.getElementById("metaLayer").value,
+    point: document.getElementById("metaPoint").value,
+    hammer: hammerFactor,
+    totalBlows,
+    totalPen: maxPen.toFixed(0),
+    avgDcp,
+    avgCbr,
+    minSpec,
+    pass: isPass
+  });
+
+  drawLcdChart(computedRows, minSpec);
+}
+
+function drawLcdChart(rows, minSpec) {
+  const svg = document.getElementById("dcpChart");
+  const mode = document.getElementById("chartModeSelect").value;
+  const W = 460, H = 270;
+  const padL = 50, padR = 16, padT = 16, padB = 38;
+  const plotW = W - padL - padR;
+  const plotH = H - padT - padB;
+
+  const ink = "#131c15";
+  const inkSoft = "#37473a";
+  const gridCol = "rgba(19, 28, 21, 0.16)";
+
+  if (mode === "cbr_depth") {
+    document.getElementById("chartLegendLeft").textContent = "■ Profil CBR (%) vs Kedalaman (mm)";
+    document.getElementById("chartLegendRight").textContent = `-- Min Spec (${minSpec}%)`;
+
+    const pts = rows.filter(r => r.valid);
+    const maxDepth = Math.max(350, ...pts.map(p => p.cumPen));
+    const maxCbr = Math.max(minSpec * 1.3, 20, ...pts.map(p => p.cbrVal));
+    const ceilCbr = Math.ceil(maxCbr / 5) * 5;
+    const ceilDepth = Math.ceil(maxDepth / 50) * 50;
+
+    const xPos = cbr => padL + (Math.min(cbr, ceilCbr) / ceilCbr) * plotW;
+    const yPos = dep => padT + (Math.min(dep, ceilDepth) / ceilDepth) * plotH;
+
+    let html = "";
+    // Vertical grid (CBR %)
+    for (let i = 0; i <= 5; i++) {
+      const val = (ceilCbr / 5) * i;
+      const x = xPos(val);
+      html += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="${gridCol}" stroke-width="1"/>`;
+      html += `<text x="${x}" y="${padT + plotH + 14}" text-anchor="middle" fill="${inkSoft}" font-family="monospace" font-size="10" font-weight="700">${val.toFixed(0)}%</text>`;
+    }
+    // Horizontal grid (Depth mm, 0 at top -> deeper downward)
+    for (let i = 0; i <= 5; i++) {
+      const dep = (ceilDepth / 5) * i;
+      const y = yPos(dep);
+      html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${gridCol}" stroke-width="1"/>`;
+      html += `<text x="${padL - 6}" y="${y + 3.5}" text-anchor="end" fill="${inkSoft}" font-family="monospace" font-size="10" font-weight="700">${Math.round(dep)}</text>`;
+    }
+
+    // Min Spec dashed line
+    if (minSpec <= ceilCbr) {
+      const xs = xPos(minSpec);
+      html += `<line x1="${xs}" y1="${padT}" x2="${xs}" y2="${padT + plotH}" stroke="#991b1b" stroke-width="1.6" stroke-dasharray="5 3"/>`;
+    }
+
+    // Profile polyline & markers
+    if (pts.length > 0) {
+      const polyPts = pts.map(p => `${xPos(p.cbrVal).toFixed(1)},${yPos(p.cumPen).toFixed(1)}`).join(" ");
+      html += `<polyline points="${polyPts}" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
+      pts.forEach(p => {
+        const cx = xPos(p.cbrVal), cy = yPos(p.cumPen);
+        html += `<rect x="${cx - 3.5}" y="${cy - 3.5}" width="7" height="7" fill="${ink}"/>`;
+      });
+    }
+
+    html += `<rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
+    html += `<text x="${padL + plotW / 2}" y="${H - 5}" text-anchor="middle" fill="${ink}" font-family="monospace" font-size="10.5" font-weight="800">CBR Correlated (%)</text>`;
+    html += `<text x="13" y="${padT + plotH / 2}" text-anchor="middle" fill="${ink}" font-family="monospace" font-size="10.5" font-weight="800" transform="rotate(-90 13 ${padT + plotH / 2})">Depth (mm)</text>`;
+    svg.innerHTML = html;
+  } else {
+    document.getElementById("chartLegendLeft").textContent = "■ Kumulatif Penetrasi (mm) vs Blows";
+    document.getElementById("chartLegendRight").textContent = "Kurva Standar Form Excel";
+
+    const pts = [rows[0], ...rows.slice(1).filter(r => r.valid)];
+    const maxBlow = Math.max(10, ...pts.map(p => p.cumBlows));
+    const maxPen = Math.max(350, ...pts.map(p => p.cumPen));
+    const ceilPen = Math.ceil(maxPen / 50) * 50;
+
+    const xPos = b => padL + (b / maxBlow) * plotW;
+    const yPos = p => padT + (p / ceilPen) * plotH;
+
+    let html = "";
+    for (let i = 0; i <= 5; i++) {
+      const bVal = (maxBlow / 5) * i;
+      const x = xPos(bVal);
+      html += `<line x1="${x}" y1="${padT}" x2="${x}" y2="${padT + plotH}" stroke="${gridCol}" stroke-width="1"/>`;
+      html += `<text x="${x}" y="${padT + plotH + 14}" text-anchor="middle" fill="${inkSoft}" font-family="monospace" font-size="10" font-weight="700">${Math.round(bVal)}</text>`;
+    }
+    for (let i = 0; i <= 5; i++) {
+      const pVal = (ceilPen / 5) * i;
+      const y = yPos(pVal);
+      html += `<line x1="${padL}" y1="${y}" x2="${W - padR}" y2="${y}" stroke="${gridCol}" stroke-width="1"/>`;
+      html += `<text x="${padL - 6}" y="${y + 3.5}" text-anchor="end" fill="${inkSoft}" font-family="monospace" font-size="10" font-weight="700">${Math.round(pVal)}</text>`;
+    }
+
+    if (pts.length > 1) {
+      const polyPts = pts.map(p => `${xPos(p.cumBlows).toFixed(1)},${yPos(p.cumPen).toFixed(1)}`).join(" ");
+      html += `<polyline points="${polyPts}" fill="none" stroke="${ink}" stroke-width="2.4"/>`;
+      pts.forEach(p => {
+        const cx = xPos(p.cumBlows), cy = yPos(p.cumPen);
+        html += `<circle cx="${cx}" cy="${cy}" r="3.8" fill="${ink}"/>`;
+      });
+    }
+
+    html += `<rect x="${padL}" y="${padT}" width="${plotW}" height="${plotH}" fill="none" stroke="${ink}" stroke-width="1.4"/>`;
+    html += `<text x="${padL + plotW / 2}" y="${H - 5}" text-anchor="middle" fill="${ink}" font-family="monospace" font-size="10.5" font-weight="800">Cumulative Blows</text>`;
+    html += `<text x="13" y="${padT + plotH / 2}" text-anchor="middle" fill="${ink}" font-family="monospace" font-size="10.5" font-weight="800" transform="rotate(-90 13 ${padT + plotH / 2})">Penetration (mm)</text>`;
+    svg.innerHTML = html;
+  }
+}
+
+function saveCurrentPoint() {
+  const hammer = parseFloat(document.getElementById("hammerFactor").value) || 1;
+  const minSpec = parseFloat(document.getElementById("minSpec").value) || 0;
+
+  let validCbrs = [], validDcps = [], totalBlows = 0, totalPen = parseFloat(penArr[0]) || 0;
+  for (let i = 1; i < TOTAL_ROWS; i++) {
+    const b = parseFloat(blowsArr[i]), p = parseFloat(penArr[i]);
+    if (!isNaN(b) && b > 0 && !isNaN(p) && penArr[i] !== "") {
+      const prev = !isNaN(parseFloat(penArr[i - 1])) ? parseFloat(penArr[i - 1]) : 0;
+      const dp = p - prev;
+      if (dp > 0) {
+        const dcp = (dp / b) * hammer;
+        validDcps.push(dcp);
+        validCbrs.push(292 / Math.pow(dcp, 1.12));
+        totalBlows += b;
+        totalPen = p;
+      }
+    }
+  }
+
+  const avgCbr = validCbrs.length ? validCbrs.reduce((a, b) => a + b, 0) / validCbrs.length : 0;
+  const avgDcp = validDcps.length ? validDcps.reduce((a, b) => a + b, 0) / validDcps.length : 0;
+
+  const item = {
+    id: Date.now(),
+    title: document.getElementById("customTitle").value || "FIELD COMPACTION (DCP) REPORT",
+    date: document.getElementById("metaDate").value,
+    sta: document.getElementById("metaSta").value || "-",
+    layer: document.getElementById("metaLayer").value,
+    point: document.getElementById("metaPoint").value || "Point",
+    hammer,
+    minSpec,
+    totalBlows,
+    totalPen,
+    avgDcp,
+    avgCbr,
+    pass: avgCbr >= minSpec,
+    blows: [...blowsArr],
+    pens: [...penArr]
+  };
+
+  savedPoints.unshift(item);
+  localStorage.setItem("dcp_calc_points_v1", JSON.stringify(savedPoints));
+  renderSavedPoints();
+  showToast(`Titik "${item.point}" (CBR ${avgCbr.toFixed(2)}%) disimpan!`);
+}
+
+function loadPoint(id) {
+  const it = savedPoints.find(x => x.id === id);
+  if (!it) return;
+  if (it.title) document.getElementById("customTitle").value = it.title;
+  if (it.date) document.getElementById("metaDate").value = it.date;
+  document.getElementById("metaSta").value = it.sta;
+  document.getElementById("metaLayer").value = it.layer;
+  document.getElementById("metaPoint").value = it.point;
+  document.getElementById("hammerFactor").value = it.hammer;
+  document.getElementById("minSpec").value = it.minSpec;
+
+  blowsArr = [...it.blows];
+  penArr   = [...it.pens];
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    document.getElementById(`blow_${i}`).value = blowsArr[i];
+    document.getElementById(`pen_${i}`).value  = penArr[i];
+  }
+  saveMeta();
+  recalculate();
+  showToast(`Memuat ${it.point}`);
+}
+
+function copySavedPoint(id, ev) {
+  if (ev) ev.stopPropagation();
+  const it = savedPoints.find(x => x.id === id);
+  if (!it) return;
+  const txt = buildSummaryText(it);
+  document.getElementById("reportBox").value = txt;
+  copyWithFallback(txt, `Hasil ${it.point} disalin!`);
+}
+
+function deleteSavedPoint(id, ev) {
+  if (ev) ev.stopPropagation();
+  savedPoints = savedPoints.filter(x => x.id !== id);
+  localStorage.setItem("dcp_calc_points_v1", JSON.stringify(savedPoints));
+  renderSavedPoints();
+}
+
+function renderSavedPoints() {
+  const list = document.getElementById("savedList");
+  document.getElementById("savedCount").textContent = savedPoints.length;
+
+  if (savedPoints.length === 0) {
+    document.getElementById("savedAvgLabel").textContent = "Avg: -";
+    list.innerHTML = `<div style="font-size:11.5px; color:var(--text-dim); text-align:center; padding:14px;">Belum ada titik tersimpan. Tekan <strong>STO + Simpan</strong> setelah input bacaan DCP.</div>`;
+    return;
+  }
+
+  const avgAll = savedPoints.reduce((s, x) => s + x.avgCbr, 0) / savedPoints.length;
+  document.getElementById("savedAvgLabel").textContent = `Avg: ${avgAll.toFixed(2)}%`;
+
+  list.innerHTML = savedPoints.map(it => `
+    <div class="saved-card">
+      <div class="saved-info" onclick="loadPoint(${it.id})" title="Klik untuk muat ke kalkulator">
+        <strong>${it.point} &bull; <span style="color:${it.pass ? 'var(--key-teal)' : 'var(--key-orange)'}">${it.avgCbr.toFixed(2)}% (${it.pass ? 'PASS' : 'FAIL'})</span></strong>
+        <span>${formatTanggalIndo(it.date)} | ${it.sta} &bull; <em>Klik muat</em></span>
+      </div>
+      <div class="saved-btns">
+        <button class="calc-btn btn-blue" style="padding:4px 8px; font-size:11px;" onclick="copySavedPoint(${it.id}, event)">Salin</button>
+        <button class="calc-btn btn-danger" style="padding:4px 8px; font-size:11px;" onclick="deleteSavedPoint(${it.id}, event)">Hapus</button>
+      </div>
+    </div>
+  `).join("");
+}
+
+function copyWithFallback(text, msg) {
+  const box = document.getElementById("reportBox");
+  box.value = text;
+  box.focus();
+  box.select();
+  box.setSelectionRange(0, 99999);
+  let ok = false;
+  try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+  if (ok) {
+    showToast(msg || "Data berhasil disalin!");
+  } else if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text)
+      .then(() => showToast(msg || "Data berhasil disalin!"))
+      .catch(() => showToast("Teks diblok, ketuk Salin di HP"));
+  } else {
+    showToast("Teks diblok, ketuk Salin di HP");
+  }
+}
+
+function copyReport() {
+  copyWithFallback(document.getElementById("reportBox").value, "Data DCP berhasil disalin!");
+}
+
+function exportCSV() {
+  const title = document.getElementById("customTitle").value || "FIELD COMPACTION (DCP) INSPECTION REPORT (ASTM D 6951)";
+  const hammer = parseFloat(document.getElementById("hammerFactor").value) || 1;
+  const rows = [
+    [title],
+    ["Tanggal", document.getElementById("metaDate").value || "-"],
+    ["STA / Location", document.getElementById("metaSta").value || "-"],
+    ["Point of Test", document.getElementById("metaPoint").value || "-"],
+    ["Layer / Material", document.getElementById("metaLayer").value],
+    ["Hammer Weight", hammer === 2 ? "4 Kg (Factor 2)" : "8 Kg (Factor 1)"],
+    ["Min Spec CBR (%)", document.getElementById("minSpec").value],
+    [],
+    ["No", "No of Blows (A)", "Cumulative Penetration (mm) (B)", "Penetration Between Readings (mm) (C)", "Penetration per Blow (mm) (D)", "Hammer Factor (E)", "DCP Index mm/Blow (F)", "CBR Correlated (%)"]
+  ];
+
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    const b = parseFloat(blowsArr[i]) || 0;
+    const p = parseFloat(penArr[i]) || 0;
+    if (i === 0) {
+      rows.push([1, b, p, 0, 0, hammer, 0, 0]);
+    } else if (b > 0 && penArr[i] !== "") {
+      const prev = parseFloat(penArr[i - 1]) || 0;
+      const dp = p - prev;
+      const pb = dp > 0 ? dp / b : 0;
+      const dcp = pb * hammer;
+      const cbr = dcp > 0 ? 292 / Math.pow(dcp, 1.12) : 0;
+      rows.push([i + 1, b, p, dp, pb.toFixed(2), hammer, dcp.toFixed(2), cbr.toFixed(2)]);
+    }
+  }
+  rows.push([]);
+  rows.push(["AVERAGE CBR (%)", document.getElementById("lcdAvgCbr").textContent]);
+  rows.push(["AVERAGE DCP INDEX (mm/blow)", document.getElementById("lcdAvgDcp").textContent]);
+
+  const csvContent = rows.map(r => r.map(v => `"${String(v).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  const pt = (document.getElementById("metaPoint").value || "DCP").replace(/[^a-zA-Z0-9_-]/g, "_");
+  a.href = url;
+  a.download = `Field_DCP_${pt}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast("File CSV berhasil diunduh!");
+}
+
+function showToast(msg) {
+  const t = document.getElementById("toast");
+  t.textContent = msg;
+  t.classList.add("show");
+  setTimeout(() => t.classList.remove("show"), 2300);
+}
+
+
+if ("serviceWorker" in navigator) {
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./sw.js").catch(() => {});
+  });
+}
+initTable();
+</script>
+</body>
+</html>
